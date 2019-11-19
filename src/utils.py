@@ -17,8 +17,8 @@ def get_transformer(ds_name, train, crop_size, image_size):
     component.append(tfs.ToTensor())
 
     if ds_name in D1_SPLIT:
-        component.append(tfs.Normalize(mean=.5, std=.5))
+        component.append(tfs.Normalize(mean=(.5, ), std=(.5, )))
     elif ds_name in D2_SPLIT:
-        component.append(tfs.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+        component.append(tfs.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)))
 
     return tfs.Compose(component)
