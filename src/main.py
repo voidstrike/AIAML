@@ -23,17 +23,17 @@ def main(opt):
     solver = Solver(net, opt)
     if opt.mode == 'train':
         solver.train(opt.epoch)
-        print('Current Model Performance in Test Split====================')
-        solver.test()
         print('Saving Model===============================================')
         solver.save(opt.model_path)
+        print('Current Model Performance in Test Split====================')
+        solver.test()
     elif opt.mode == 'test':
+        solver.load(opt.model_path)
         solver.test()
     elif opt.mode == 'attack':
         solver.test()
     else:
         raise NotImplementedError('Unsupported Mode Selected')
-
     pass
 
 
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     parser.add_argument('--beta1', type=float, default=.5)
     parser.add_argument('--beta2', type=float, default=.999)
     parser.add_argument('--lr', type=float, default=1e-3)
-    parser.add_argument('--epoch', type=int, default=30)
+    parser.add_argument('--epoch', type=int, default=50)
     parser.add_argument('--batch_size', type=int, default=128)
 
     opt = parser.parse_args()

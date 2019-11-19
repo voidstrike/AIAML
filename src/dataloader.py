@@ -12,10 +12,13 @@ def get_data_loader(ds_name, root, batch_size=64, tfs=None, train=True):
     if ds_name not in DS_NAME:
         raise Exception('Unsupported Data Set.')
 
+    ds = None
+
     if ds_name == 'mnist':
         ds = datasets.MNIST(os.path.join(root, ds_name), train=train, transform=tfs, download=True)
     elif ds_name == 'svhn':
-        ds = datasets.SVHN(os.path.join(root, ds_name), split='train' if train else 'test')
+        ds = datasets.SVHN(os.path.join(root, ds_name), split='train' if train else 'test', download=True,
+                           transform=tfs)
     elif ds_name == 'cifar10':
         ds = datasets.CIFAR10(os.path.join(root, ds_name), train=train, transform=tfs, download=True)
     elif ds_name == 'img_folder':
