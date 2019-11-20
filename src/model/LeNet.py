@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 class LeNet(nn.Module):
     # Standard LeNet Implementation
-    def __init__(self, single=False):
+    def __init__(self, single=False, attn_output=False):
         super(LeNet, self).__init__()
         if single:
             self.conv1 = nn.Conv2d(1, 6, kernel_size=5)
@@ -16,6 +16,8 @@ class LeNet(nn.Module):
         self.fc1 = nn.Linear(16*5*5, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
+
+        self.attn_flag = attn_output
 
     def forward(self, x):
         out = F.relu(self.conv1(x))
@@ -30,4 +32,8 @@ class LeNet(nn.Module):
         out = F.relu(self.fc1(out))
         out = F.relu(self.fc2(out))
         out = self.fc3(out)
-        return out, attn
+
+        if self.attn_flag:
+            return out, attn
+        else:
+            return out

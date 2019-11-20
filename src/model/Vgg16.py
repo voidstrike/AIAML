@@ -5,7 +5,7 @@ import torch
 
 
 class AttnVGG16(nn.Module):
-    def __init__(self, pool='max'):
+    def __init__(self, pool='max', attn_flag=False):
         super(AttnVGG16, self).__init__()
         # Standard VGG16 Implementation w/o BN
         self.conv1_1 = nn.Conv2d(3, 64, kernel_size=3, padding=1)
@@ -49,6 +49,8 @@ class AttnVGG16(nn.Module):
             nn.Linear(4096, 1000),
         )
 
+        self.attn_flag = attn_flag
+
     def forward(self, x):
         res = F.relu(self.conv1_1(x))
         res = F.relu(self.conv1_2(res))
@@ -75,12 +77,17 @@ class AttnVGG16(nn.Module):
         res = res.flatten(start_dim=1)
         final_res = self.classifier(res)
 
-        return final_res, attn
+        if self.attn_flag:
+            return final_res, attn
+        else:
+            return final_res
 
     # Copy the weight & bias from other trained VGG-16 model (Same structure in torch model zoo)
     def weight_copy_(self, tgt=None):
         if tgt is None:
             tgt = vgg16(pretrained=True)
+            if torch.cuda.is_available():
+                tgt = tgt.cuda()
 
         assert tgt.features is not None
 
@@ -116,6 +123,12 @@ class AttnVGG16(nn.Module):
         self.conv5_3.bias = tgt.features[28].bias
 
         self.train()
+
+    def mutate_clf(self, flag=True):
+        for param in self.parameters():
+            param.requires_grad = False
+        for param in self.classifier.parameters():
+            param.requires_grad = flag
 
 
 def main():

@@ -21,17 +21,22 @@ def main(opt):
 
     # Initialize Solver
     solver = Solver(net, opt)
-    if opt.mode == 'train':
+    if opt.mode == 'train' or opt.mode == 'mix':
         solver.train(opt.epoch)
         print('Saving Model===============================================')
         solver.save(opt.model_path)
-        print('Current Model Performance in Test Split====================')
-        solver.test()
+        if opt.mode == 'mix':
+            print('Current Model Performance in Test Split====================')
+            solver.test()
     elif opt.mode == 'test':
         solver.load(opt.model_path)
         solver.test()
     elif opt.mode == 'attack':
-        solver.test()
+        solver.load(opt.model_path)
+        solver.test_with_attack(opt.attack)
+    elif opt.mode == 'attn_attack':
+        solver.load(opt.model_path)
+        solver.test_with_attack_and_attention(opt.attack)
     else:
         raise NotImplementedError('Unsupported Mode Selected')
     pass
@@ -45,12 +50,12 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=str, required=True, help='Name of the model, lenet|vgg16')
     parser.add_argument('--model_path', type=str, default='../models/',
                         help='The root directory that stores trained model')
-    parser.add_argument('--mode', type=str, default='train', help='Mode to execute, train|test|attack')
+    parser.add_argument('--mode', type=str, default='train', help='Mode to execute, train|test|attack|attn_attack')
     parser.add_argument('--attack', type=str, default='fgsm', help='Name of the attack method, '
                                                                    'fgsm|deepfool|pgd|cw2|cwi|trojan')
     parser.add_argument('--root', type=str, default='../data/', help='The root directory that stores data corpus.')
-    parser.add_argument('--crop_size', type=int, default=36, help='Crop_size for the image, 36|286')
-    parser.add_argument('--image_size', type=int, default=32, help='Image size for the image, 32|256')
+    parser.add_argument('--crop_size', type=int, default=36, help='Crop_size for the image, 36|268')
+    parser.add_argument('--image_size', type=int, default=32, help='Image size for the image, 32|224')
     parser.add_argument('--display', type=int, default=1)
 
     # Training parameters
@@ -59,6 +64,9 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--epoch', type=int, default=50)
     parser.add_argument('--batch_size', type=int, default=128)
+
+    # Attn Comparison params
+    parser.add_argument('--thresh', type=float, default=.5)
 
     opt = parser.parse_args()
     main(opt)
