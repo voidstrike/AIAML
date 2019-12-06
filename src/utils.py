@@ -17,6 +17,26 @@ SHAPE_DICT = {
 }
 
 
+class UnNormalize(object):
+    def __init__(self, mean, std):
+        self.mean = mean
+        self.std = std
+
+    def __call__(self, intensor, c=1):
+        """
+        Args:
+            tensor (Tensor): Tensor image of size (C, H, W) to be normalized.
+        Returns:
+            Tensor: Normalized image.
+        """
+        intensor[:, 0, :, :] = intensor[:, 0, :, :].mul_(self.std[0]).add_(self.mean[0])
+        if c == 3:
+            intensor[:, 1, :, :] = intensor[:, 1, :, :].mul_(self.std[1]).add_(self.mean[1])
+            intensor[:, 2, :, :] = intensor[:, 2, :, :].mul_(self.std[2]).add_(self.mean[2])
+
+        return intensor
+
+
 def get_transformer(ds_name, train, crop_size, image_size):
     global D1_SPLIT, D2_SPLIT
     component = list()  # No horizontal flip
@@ -37,7 +57,7 @@ def get_transformer(ds_name, train, crop_size, image_size):
     return tfs.Compose(component)
 
 
-def build_adversarial(model, optimizer, loss, input_shape, nb_class, method, batch_size=32):
+def build_adversarial(model, optimizer, loss, input_shape, nb_class, method, batch_size=32, pgd_eps=0.3):
     model.eval()
     wmodel = PyTorchClassifier(model, loss, optimizer, input_shape, nb_class)
 
@@ -54,7 +74,7 @@ def build_adversarial(model, optimizer, loss, input_shape, nb_class, method, bat
     elif method == 'fgsm':
         adv_crafter = FastGradientMethod(wmodel, batch_size=batch_size)
     elif method == 'pgd':
-        adv_crafter = ProjectedGradientDescent(wmodel, batch_size=batch_size)
+        adv_crafter = ProjectedGradientDescent(wmodel, batch_size=batch_size, eps=pgd_eps)
     else:
         raise NotImplementedError('Unsupported Attack Method: {}'.format(method))
 

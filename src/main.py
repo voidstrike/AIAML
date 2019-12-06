@@ -28,17 +28,20 @@ def main(opt):
         if opt.mode == 'mix':
             print('Current Model Performance in Test Split====================')
             solver.test()
-    elif opt.mode == 'test':
-        solver.load(opt.model_path)
-        solver.test()
-    elif opt.mode == 'attack':
-        solver.load(opt.model_path)
-        solver.test_with_attack(opt.attack)
-    elif opt.mode == 'attn_attack':
-        solver.load(opt.model_path)
-        solver.test_with_attack_and_attention(opt.attack)
     else:
-        raise NotImplementedError('Unsupported Mode Selected')
+        solver.load(opt.model_path)
+        if opt.mode == 'test':
+            solver.test()
+        elif opt.mode == 'attack':
+            solver.test_with_attack(opt.attack)
+        elif opt.mode == 'attn_attack':
+            solver.test_with_attack_and_attention(opt.attack)
+        elif opt.mode == 'visualize':
+            solver.sample_images_pgd()
+            # solver.sample_images()
+        else:
+            raise NotImplementedError('Unsupported Mode Selected')
+
     pass
 
 
@@ -50,6 +53,7 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=str, required=True, help='Name of the model, lenet|vgg16')
     parser.add_argument('--model_path', type=str, default='../models/',
                         help='The root directory that stores trained model')
+    parser.add_argument('--sample_path', type=str, default='../samples/')
     parser.add_argument('--mode', type=str, default='train', help='Mode to execute, train|test|attack|attn_attack')
     parser.add_argument('--attack', type=str, default='fgsm', help='Name of the attack method, '
                                                                    'fgsm|deepfool|pgd|cw2|cwi|trojan')
